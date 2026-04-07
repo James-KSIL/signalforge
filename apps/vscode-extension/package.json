@@ -1,0 +1,86 @@
+{
+  "name": "signalforge-vscode-extension",
+  "displayName": "SignalForge",
+  "version": "0.1.0",
+  "engines": {"vscode": "^1.60.0"},
+  "main": "./dist/extension.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "echo dev not implemented",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@signalforge/core": "workspace:*",
+    "@signalforge/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0"
+  },
+  "activationEvents": [
+    "onCommand:signalforge.hello",
+    "onCommand:signalforge.startCaptureSession",
+    "onCommand:signalforge.pinProject",
+    "onCommand:signalforge.unpinProject",
+    "onCommand:signalforge.showLatestDispatch",
+    "onCommand:signalforge.materializeLatestDispatch",
+    "onCommand:signalforge.inspectDispatchEvents",
+    "onCommand:signalforge.refreshLatestDispatchFromStore",
+    "onCommand:signalforge.generateAdrDraft",
+    "onCommand:signalforge.generateSessionSummary",
+    "onCommand:signalforge.generateLinkedInTopics",
+    "onCommand:signalforge.logOutcome",
+    "onCommand:signalforge.openLatestOutcomeLog",
+    "onCommand:signalforge.startSession",
+    "onCommand:signalforge.endSession",
+    "onCommand:signalforge.showActiveSession",
+    "onCommand:signalforge.captureWorkspaceErrors",
+    "onCommand:signalforge.resetExtensionState"
+    ,"onCommand:signalforge.openArtifactsFolder"
+  ],
+  "contributes": {
+    "configuration": {
+      "title": "SignalForge",
+      "properties": {
+        "signalforge.debugMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable lightweight SignalForge debug logs for event creation, validation, and generator invocation."
+        }
+      }
+    },
+    "commands": [
+      {"command": "signalforge.hello", "title": "SignalForge: Hello"},
+      {"command": "signalforge.startCaptureSession", "title": "SignalForge: Start Capture Session"},
+      {"command": "signalforge.pinProject", "title": "SignalForge: Pin Project"},
+      {"command": "signalforge.unpinProject", "title": "SignalForge: Unpin Project"},
+      {"command": "signalforge.showLatestDispatch", "title": "SignalForge: Show Latest Dispatch"},
+      {"command": "signalforge.materializeLatestDispatch", "title": "SignalForge: Materialize Latest Dispatch"}
+      ,{"command":"signalforge.setLatestDispatchForTesting","title":"SignalForge: Set Latest Dispatch (test)"}
+      ,{"command":"signalforge.clearLatestDispatch","title":"SignalForge: Clear Latest Dispatch (test)"}
+      ,{"command":"signalforge.seedTestDispatch","title":"SignalForge: Seed Test Dispatch"}
+      ,{"command":"signalforge.seedAndMaterializeTestDispatch","title":"SignalForge: Seed and Materialize Test Dispatch"}
+      ,{"command":"signalforge.inspectDispatchEvents","title":"SignalForge: Inspect Dispatch Events"}
+      ,{"command":"signalforge.refreshLatestDispatchFromStore","title":"SignalForge: Refresh Latest Dispatch From Store"}
+      ,{"command":"signalforge.generateAdrDraft","title":"SignalForge: Generate ADR Draft"}
+      ,{"command":"signalforge.generateSessionSummary","title":"SignalForge: Generate Session Summary"}
+      ,{"command":"signalforge.generateLinkedInTopics","title":"SignalForge: Generate LinkedIn Topics"}
+      ,{"command":"signalforge.startSession","title":"SignalForge: Start Session"}
+      ,{"command":"signalforge.endSession","title":"SignalForge: End Session"}
+      ,{"command":"signalforge.showActiveSession","title":"SignalForge: Show Active Session"}
+      ,{"command":"signalforge.captureWorkspaceErrors","title":"SignalForge: Capture Workspace Errors"}
+      ,{"command":"signalforge.resetExtensionState","title":"SignalForge: Reset Extension State"}
+      ,{"command":"signalforge.logOutcome","title":"SignalForge: Log Outcome"}
+      ,{"command":"signalforge.openLatestOutcomeLog","title":"SignalForge: Open Latest Outcome Log"}
+      ,{"command":"signalforge.openLatestAdr","title":"SignalForge: Open Latest ADR"}
+      ,{"command":"signalforge.openLatestSessionSummary","title":"SignalForge: Open Latest Session Summary"}
+      ,{"command":"signalforge.openLatestLinkedInTopics","title":"SignalForge: Open Latest LinkedIn Topics"}
+      ,{"command":"signalforge.openLatestArtifacts","title":"SignalForge: Open Latest Artifacts (quick)"}
+      ,{"command":"signalforge.openArtifactsFolder","title":"SignalForge: Open Artifacts/Docs Folder"}
+    ],
+    "views": {
+      "explorer": [
+        {"id": "signalforgeView", "name": "SignalForge"}
+      ]
+    }
+  }
+}

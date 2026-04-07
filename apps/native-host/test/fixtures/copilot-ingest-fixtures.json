@@ -1,0 +1,56 @@
+[
+  {
+    "name": "valid candidate fixture => promoted",
+    "id": "cand_fixture_valid",
+    "raw_text": "Created src/valid.ts\npnpm build\nExit code: 0",
+    "source": "clipboard",
+    "content_hash": "__COMPUTE__",
+    "expected_status": "promoted",
+    "expected_gate_pass": 1,
+    "expected_promoted": true
+  },
+  {
+    "name": "high diagnostic score but zero execution signals => rejected",
+    "id": "cand_fixture_highscore_no_exec",
+    "raw_text": "## Implementation Complete\nFiles Changed: src/feature.ts src/feature-helper.ts src/contracts/policy.ts\nValidation Matrix and Detailed Changes documented across src/feature.ts and src/contracts/policy.ts with architectural notes and structural integrity evidence repeated for deterministic review. Outcome section confirms implementation details, file mapping, and semantic alignment narratives without command outputs.",
+    "source": "clipboard",
+    "content_hash": "__COMPUTE__",
+    "expected_status": "rejected",
+    "expected_gate_pass": 0,
+    "expected_promoted": false,
+    "expected_failure_reason": "execution_signals_count >= 1"
+  },
+  {
+    "name": "zero valid file refs => rejected",
+    "id": "cand_fixture_no_file_refs",
+    "raw_text": "Implemented major architecture cleanup with deterministic checks. pnpm build -> PASS",
+    "source": "clipboard",
+    "content_hash": "__COMPUTE__",
+    "expected_status": "rejected",
+    "expected_gate_pass": 0,
+    "expected_promoted": false,
+    "expected_failure_reason": "file_refs.length >= 1 (resolved within workspace)"
+  },
+  {
+    "name": "null source => rejected",
+    "id": "cand_fixture_null_source",
+    "raw_text": "Created src/null-source.ts\npnpm test\n2 passed",
+    "source": null,
+    "content_hash": "__COMPUTE__",
+    "expected_status": "rejected",
+    "expected_gate_pass": 0,
+    "expected_promoted": false,
+    "expected_failure_reason": "source !== null"
+  },
+  {
+    "name": "null content_hash => rejected",
+    "id": "cand_fixture_null_hash",
+    "raw_text": "Created src/null-hash.ts\npnpm build\nExit code: 0",
+    "source": "clipboard",
+    "content_hash": null,
+    "expected_status": "rejected",
+    "expected_gate_pass": 0,
+    "expected_promoted": false,
+    "expected_failure_reason": "content_hash !== null"
+  }
+]

@@ -1,0 +1,54 @@
+{
+  "project_id": "signalforge",
+  "time_range_start": "2026-03-29T04:06:56.050Z",
+  "time_range_end": "2026-03-29T04:27:31.728Z",
+  "patterns": [
+    {
+      "type": "architecture-decision",
+      "pattern_id": "pattern_architecture-decision_project-scoped-storage",
+      "name": "project-scoped-storage-boundaries",
+      "principle": "Each project has its own scoped artifact storage directory",
+      "rationale": "Prevents cross-project pollution and enables per-project versioning",
+      "affectedAreas": [
+        "artifact paths",
+        "project contexts"
+      ],
+      "decisions": 4,
+      "tradeoffs": [
+        "No global artifact sharing",
+        "More disk usage multiplied by projects"
+      ],
+      "alternatives": [
+        "Global shared artifact store",
+        "Cloud-backed storage"
+      ],
+      "lastDecision": "2026-03-29T04:27:31.728Z"
+    },
+    {
+      "type": "acceptance-criteria",
+      "pattern_id": "pattern_acceptance-criteria_determinism",
+      "name": "determinism-validation",
+      "criteria": [
+        "Same input events produce same output",
+        "No random IDs or timestamps",
+        "No external model invocation",
+        "Results are reproducible"
+      ],
+      "occurrences": 4,
+      "passingRate": 1,
+      "relatedTags": [
+        "validation",
+        "source-of-truth"
+      ],
+      "lastValidation": "2026-03-29T04:27:31.728Z"
+    }
+  ],
+  "contexts": {},
+  "total_patterns": 2,
+  "unique_pattern_ids": 2,
+  "most_frequent": [
+    "pattern_architecture-decision_project-scoped-storage",
+    "pattern_acceptance-criteria_determinism"
+  ],
+  "highest_severity": []
+}

@@ -1,0 +1,1 @@
+2026-04-04: Monorepo Node type configuration unified across all five projects, and explicit per-project `@types/node` plus `compilerOptions.types` was adopted so root hoisting no longer masks drift and Node runtime surfaces stay deterministic.

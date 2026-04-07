@@ -1,0 +1,61 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-03-29T04:27:31.728Z",
+  "project_id": "signalforge",
+  "time_range": {
+    "start": "2026-03-29T04:06:56.050Z",
+    "end": "2026-03-29T04:27:31.728Z"
+  },
+  "summary": {
+    "total_signals": 1,
+    "by_type": {
+      "decision": 1
+    },
+    "by_status": {
+      "success": 1
+    },
+    "unique_sessions": 0,
+    "unique_dispatches": 0
+  },
+  "signals": [
+    {
+      "id": "decision_pattern_architecture-decision_project-scoped-storage",
+      "type": "decision",
+      "title": "project-scoped-storage-boundaries",
+      "summary": "Each project has its own scoped artifact storage directory",
+      "timestamp": "2026-03-29T04:27:31.728Z",
+      "project_id": "signalforge",
+      "status": "success",
+      "tags": [
+        "architecture",
+        "decision"
+      ],
+      "pattern_ids": [
+        "pattern_architecture-decision_project-scoped-storage"
+      ]
+    }
+  ],
+  "patterns": {
+    "total_detected": 2,
+    "by_category": {
+      "architecture-decision": 1,
+      "acceptance-criteria": 1
+    },
+    "highest_severity_patterns": []
+  },
+  "tags": {
+    "all_tags": [
+      "architecture",
+      "decision"
+    ],
+    "tag_frequency": {
+      "architecture": 1,
+      "decision": 1
+    }
+  },
+  "metadata": {
+    "deterministic": true,
+    "source": "canonical-event-stream",
+    "validated": true
+  }
+}

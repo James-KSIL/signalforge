@@ -1,0 +1,333 @@
+"use strict";
+/**
+ * Pattern Extractor - Main entry point for deterministic pattern extraction
+ *
+ * Coordinates detection of all pattern types from event stream and outcomes.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.identifyPatternRelationships = exports.computePatternFrequencies = exports.extractPatterns = void 0;
+const eventTags_1 = require("../events/eventTags");
+const patternRules_1 = require("./patternRules");
+/**
+ * Extract all patterns from events and outcomes
+ */
+function extractPatterns(projectId, events, outcomes = [], timeRangeStart, timeRangeEnd) {
+    // Sort events by timestamp
+    const sortedEvents = [...events].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+    const deterministicTimestamp = getDeterministicTimestamp(sortedEvents, outcomes);
+    // Get time range from events if not provided
+    const start = timeRangeStart || (sortedEvents[0]?.timestamp) || deterministicTimestamp;
+    const end = timeRangeEnd || (sortedEvents[sortedEvents.length - 1]?.timestamp) || deterministicTimestamp;
+    // Detect all patterns
+    const patterns = (0, patternRules_1.detectAllPatterns)(sortedEvents, outcomes).map((pattern) => {
+        const patternIdParts = String(pattern.pattern_id || '').split('_');
+        const subtype = patternIdParts.slice(2).join('_') || String(pattern.name || 'unknown');
+        return {
+            ...pattern,
+            category: pattern.category || pattern.type,
+            subtype: pattern.subtype || subtype,
+        };
+    });
+    // Build pattern contexts (evidence linking)
+    const contexts = buildPatternContexts(projectId, patterns, events, outcomes, end);
+    // Compute metrics
+    const uniqueIds = new Set(patterns.map((p) => p.pattern_id));
+    const frequencyMap = new Map();
+    patterns.forEach((p) => {
+        frequencyMap.set(p.pattern_id, (frequencyMap.get(p.pattern_id) ?? 0) + 1);
+    });
+    const mostFrequent = Array.from(frequencyMap.entries())
+        .sort((a, b) => b[1] - a[1])
+        .map((e) => e[0])
+        .slice(0, 5);
+    const highestSeverity = patterns
+        .filter((p) => p.type === 'failure-mode')
+        .sort((a, b) => {
+        const severityMap = { critical: 4, high: 3, medium: 2, low: 1 };
+        const bRank = severityMap[b.severity] ?? 0;
+        const aRank = severityMap[a.severity] ?? 0;
+        return bRank - aRank;
+    })
+        .map((p) => p.pattern_id)
+        .slice(0, 3);
+    return {
+        project_id: projectId,
+        time_range_start: start,
+        time_range_end: end,
+        patterns,
+        contexts,
+        total_patterns: patterns.length,
+        unique_pattern_ids: uniqueIds.size,
+        most_frequent: mostFrequent,
+        highest_severity: highestSeverity,
+    };
+}
+exports.extractPatterns = extractPatterns;
+/**
+ * Build pattern contexts showing evidence from events
+ */
+function buildPatternContexts(projectId, patterns, events, outcomes, detectedAt) {
+    const contexts = new Map();
+    const eventTags = (0, eventTags_1.tagEvents)(events);
+    const eventsByProject = events.filter((e) => e.project_id === projectId);
+    for (const pattern of patterns) {
+        const context = {
+            pattern_id: pattern.pattern_id,
+            detected_at: detectedAt,
+            evidence_events: findEvidenceEvents(pattern, eventsByProject, eventTags),
+            affected_sessions: findAffectedSessions(pattern, eventsByProject),
+            affected_dispatches: findAffectedDispatches(pattern, eventsByProject),
+            related_outcomes: findRelatedOutcomes(pattern, outcomes),
+            tags: extractPatternTags(pattern, eventTags, eventsByProject),
+            confidence: computeConfidence(pattern, eventsByProject),
+        };
+        if (!contexts.has(pattern.pattern_id)) {
+            contexts.set(pattern.pattern_id, []);
+        }
+        contexts.get(pattern.pattern_id).push(context);
+    }
+    return contexts;
+}
+/**
+ * Find events that provide evidence for a pattern
+ */
+function findEvidenceEvents(pattern, events, taggedEvents) {
+    const evidence = [];
+    const keywords = getPatternKeywords(pattern);
+    const patternTags = getPatternTags(pattern);
+    for (const event of events) {
+        const eventTags = taggedEvents.get(event.event_id) || [];
+        const content = `${event.content.summary} ${event.content.details || ''}`.toLowerCase();
+        // Match by keywords
+        if (keywords.some((kw) => content.includes(kw.toLowerCase()))) {
+            evidence.push(event.event_id);
+            continue;
+        }
+        // Match by tags
+        if (patternTags.some((tag) => eventTags.includes(tag))) {
+            evidence.push(event.event_id);
+        }
+    }
+    return Array.from(new Set(evidence)).slice(0, 20);
+}
+/**
+ * Get affected session IDs for a pattern
+ */
+function findAffectedSessions(pattern, events) {
+    const keywords = getPatternKeywords(pattern);
+    const sessions = new Set();
+    for (const event of events) {
+        const content = `${event.content.summary} ${event.content.details || ''}`.toLowerCase();
+        if (event.session_id && keywords.some((kw) => content.includes(kw.toLowerCase()))) {
+            sessions.add(event.session_id);
+        }
+    }
+    return Array.from(sessions);
+}
+/**
+ * Get affected dispatch IDs for a pattern
+ */
+function findAffectedDispatches(pattern, events) {
+    const keywords = getPatternKeywords(pattern);
+    const dispatches = new Set();
+    for (const event of events) {
+        const content = `${event.content.summary} ${event.content.details || ''}`.toLowerCase();
+        if (event.dispatch_id && keywords.some((kw) => content.includes(kw.toLowerCase()))) {
+            dispatches.add(event.dispatch_id);
+        }
+    }
+    return Array.from(dispatches);
+}
+/**
+ * Get related outcome IDs for a pattern
+ */
+function findRelatedOutcomes(pattern, outcomes) {
+    const keywords = getPatternKeywords(pattern);
+    const related = [];
+    for (const outcome of outcomes) {
+        const text = `${outcome.title || ''} ${outcome.what_broke || ''} ${outcome.what_changed || ''}`.toLowerCase();
+        if (keywords.some((kw) => text.includes(kw.toLowerCase()))) {
+            const fallback = [outcome.dispatch_thread_id, outcome.session_id, outcome.created_at, pattern.pattern_id]
+                .filter((value) => typeof value === 'string' && value.length > 0)
+                .join('_') || 'unknown';
+            related.push(outcome.outcome_id || `outcome_${fallback}`);
+        }
+    }
+    return related;
+}
+/**
+ * Extract event tags relevant to a pattern
+ */
+function extractPatternTags(pattern, taggedEvents, events) {
+    const tags = new Set();
+    const keywords = getPatternKeywords(pattern);
+    for (const event of events) {
+        const content = `${event.content.summary} ${event.content.details || ''}`.toLowerCase();
+        if (keywords.some((kw) => content.includes(kw.toLowerCase()))) {
+            const eventTags = taggedEvents.get(event.event_id) || [];
+            eventTags.forEach((t) => tags.add(t));
+        }
+    }
+    return Array.from(tags).sort();
+}
+/**
+ * Compute confidence score for a pattern
+ * 0-1: higher = more confident this is a real pattern
+ */
+function computeConfidence(pattern, events) {
+    // Base confidence on pattern type and evidence
+    let confidence = 0.5;
+    if (pattern.type === 'failure-mode') {
+        // Failure modes with multiple occurrences are more confident
+        confidence += Math.min(pattern.occurrences / 5, 0.4);
+    }
+    else if (pattern.type === 'refactor-theme') {
+        confidence += Math.min(pattern.occurrences / 3, 0.4);
+    }
+    else if (pattern.type === 'architecture-decision') {
+        confidence += Math.min(pattern.decisions / 5, 0.4);
+    }
+    else if (pattern.type === 'friction-point') {
+        confidence += Math.min(pattern.frequency / 5, 0.4);
+    }
+    return Math.min(confidence, 1.0);
+}
+/**
+ * Get keywords for a pattern
+ */
+function getPatternKeywords(pattern) {
+    if (pattern.type === 'failure-mode')
+        return pattern.keywords;
+    if (pattern.type === 'refactor-theme')
+        return [pattern.name, ...pattern.affectedModules];
+    if (pattern.type === 'architecture-decision')
+        return [pattern.name, pattern.principle];
+    if (pattern.type === 'friction-point')
+        return [pattern.name, ...pattern.symptoms];
+    if (pattern.type === 'acceptance-criteria')
+        return pattern.criteria;
+    return [];
+}
+/**
+ * Get tags for a pattern
+ */
+function getPatternTags(pattern) {
+    if (pattern.type === 'failure-mode')
+        return ['regression', 'validation'];
+    if (pattern.type === 'refactor-theme')
+        return ['cleanup', 'architecture'];
+    if (pattern.type === 'architecture-decision')
+        return ['architecture', 'source-of-truth'];
+    if (pattern.type === 'friction-point')
+        return ['runtime-path', 'normalization'];
+    if (pattern.type === 'acceptance-criteria')
+        return pattern.relatedTags;
+    return [];
+}
+/**
+ * Compute pattern frequencies for trend analysis
+ */
+function computePatternFrequencies(patterns, historicalPatterns) {
+    const frequencies = new Map();
+    for (const pattern of patterns) {
+        const frequency = {
+            pattern_id: pattern.pattern_id,
+            name: pattern.name,
+            category: pattern.type,
+            frequency: pattern.type === 'failure-mode'
+                ? pattern.occurrences
+                : pattern.type === 'refactor-theme'
+                    ? pattern.occurrences
+                    : pattern.type === 'friction-point'
+                        ? pattern.frequency
+                        : 1,
+            trend: 'stable',
+            lastSeen: pattern.lastOccurrence ||
+                pattern.lastDecision ||
+                '1970-01-01T00:00:00.000Z',
+        };
+        frequencies.set(pattern.pattern_id, frequency);
+    }
+    // Compute trends if historical data available
+    if (historicalPatterns) {
+        const historicalIds = new Map();
+        for (const p of historicalPatterns) {
+            const freq = p.type === 'failure-mode'
+                ? p.occurrences
+                : p.type === 'refactor-theme'
+                    ? p.occurrences
+                    : p.type === 'friction-point'
+                        ? p.frequency
+                        : 1;
+            historicalIds.set(p.pattern_id, freq);
+        }
+        for (const [id, freq] of frequencies) {
+            const histFreq = historicalIds.get(id);
+            if (histFreq !== undefined) {
+                if (freq.frequency > histFreq) {
+                    freq.trend = 'increasing';
+                }
+                else if (freq.frequency < histFreq) {
+                    freq.trend = 'decreasing';
+                }
+            }
+        }
+    }
+    return Array.from(frequencies.values()).sort((a, b) => b.frequency - a.frequency);
+}
+exports.computePatternFrequencies = computePatternFrequencies;
+function getDeterministicTimestamp(events, outcomes) {
+    const candidates = [];
+    for (const event of events) {
+        if (typeof event.timestamp === 'string' && event.timestamp.length > 0) {
+            candidates.push(event.timestamp);
+        }
+    }
+    for (const outcome of outcomes) {
+        if (typeof outcome?.created_at === 'string' && outcome.created_at.length > 0) {
+            candidates.push(outcome.created_at);
+        }
+    }
+    if (candidates.length === 0) {
+        return '1970-01-01T00:00:00.000Z';
+    }
+    candidates.sort();
+    return candidates[candidates.length - 1];
+}
+/**
+ * Identify relationships between patterns
+ */
+function identifyPatternRelationships(patterns) {
+    const relationships = [];
+    // Simple heuristic: patterns with shared components/tags may be related
+    for (let i = 0; i < patterns.length; i++) {
+        for (let j = i + 1; j < patterns.length; j++) {
+            const p1 = patterns[i];
+            const p2 = patterns[j];
+            // Check for causal relationships
+            if (p1.type === 'failure-mode' &&
+                p2.type === 'friction-point' &&
+                getPatternKeywords(p1).some((kw) => getPatternKeywords(p2).join(' ').includes(kw))) {
+                relationships.push({
+                    pattern_a: p1.pattern_id,
+                    pattern_b: p2.pattern_id,
+                    relationship_type: 'causes',
+                    strength: 0.7,
+                });
+            }
+            // Check for refinement relationships (architecture decisions refine each other)
+            if (p1.type === 'architecture-decision' && p2.type === 'architecture-decision') {
+                if (p1.affectedAreas.some((a) => p2.affectedAreas.some((b) => a === b))) {
+                    relationships.push({
+                        pattern_a: p1.pattern_id,
+                        pattern_b: p2.pattern_id,
+                        relationship_type: 'refines',
+                        strength: 0.6,
+                    });
+                }
+            }
+        }
+    }
+    return relationships;
+}
+exports.identifyPatternRelationships = identifyPatternRelationships;

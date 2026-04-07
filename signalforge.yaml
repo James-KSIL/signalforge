@@ -1,0 +1,6 @@
+intent: "Validate implementation against declared engineering intent"
+constraints:
+  - "all validation must be deterministic"
+  - "declared scope must exist"
+  - "scope must contain TypeScript files"
+scope: "apps/vscode-extension/src"

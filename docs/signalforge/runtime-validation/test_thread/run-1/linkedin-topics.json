@@ -1,0 +1,20 @@
+{
+  "generated_at": "2026-03-29T04:27:31.728Z",
+  "project_id": "signalforge",
+  "sessions_analyzed": 1,
+  "periods_covered": "current session",
+  "topics": [
+    {
+      "title": "Architecture Principle: project-scoped-storage-boundaries",
+      "category": "architectural-thinking",
+      "narrative": "Core principle we're enforcing: Each project has its own scoped artifact storage directory. Why? Prevents cross-project pollution and enables per-project versioning.\n        Tradeoff: No global artifact sharing. Applies to:\n        artifact paths, project contexts. Architectural principles aren't\n        constraints you fight—they're the guardrails that let systems scale.",
+      "hashtags": [
+        "systems-architecture",
+        "design-principles",
+        "scalability",
+        "software-engineering"
+      ],
+      "is_public": true
+    }
+  ]
+}

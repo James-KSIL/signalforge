@@ -1,0 +1,26 @@
+Phase 2.5 Deterministic Validation Report
+==========================================
+
+Timestamp: 2026-04-02T02:34:47.954Z
+Temp Directory: I:\SignalForge\.phase-2-5-validation
+Thread ID: phase-2-5-validation-thread
+Events Seeded: 6
+
+Validation Results:
+----------------------------------------
+ADR Artifact Valid: PASS
+Session Summary Valid: PASS
+Overall Status: PASS ✓
+
+Metrics:
+----------------------------------------
+ADR Length: 791 characters
+Session Summary Length: 759 characters
+ADR Contains Outcomes: true
+Session Summary Contains Outcomes: true
+
+Files Generated:
+----------------------------------------
+- I:\SignalForge\.phase-2-5-validation\phase-2-5-validation-thread-adr.md
+- I:\SignalForge\.phase-2-5-validation\phase-2-5-validation-thread-summary.md
+- I:\SignalForge\.phase-2-5-validation\validation-report.txt

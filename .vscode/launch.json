@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run SignalForge Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/apps/vscode-extension"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/apps/vscode-extension/dist/**/*.js"
+      ],
+      "preLaunchTask": "build-vscode-extension",
+      "env": {
+        "SIGNALFORGE_USE_INMEMORY_DB": "0",
+        "SIGNALFORGE_DB_PATH": "${workspaceFolder}/apps/native-host/data/signalforge.db"
+      }
+    }
+  ]
+}

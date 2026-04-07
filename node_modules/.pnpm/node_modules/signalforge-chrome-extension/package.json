@@ -1,0 +1,11 @@
+{
+  "name": "signalforge-chrome-extension",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "postbuild": "node -e \"const fs=require('fs'); const m=JSON.parse(fs.readFileSync('manifest.json','utf8')); if(m.background?.service_worker) m.background.service_worker=m.background.service_worker.replace(/^dist\\//,''); if(m.action?.default_popup) m.action.default_popup=m.action.default_popup.replace(/^dist\\//,''); if(m.content_scripts) m.content_scripts.forEach(cs => { if(cs.js) cs.js=cs.js.map(p=>p.replace(/^dist\\//,'')); }); fs.mkdirSync('dist/popup',{recursive:true}); fs.writeFileSync('dist/manifest.json',JSON.stringify(m,null,2)); fs.copyFileSync('src/popup/index.html','dist/popup/index.html');\"",
+    "dev": "echo dev not implemented",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

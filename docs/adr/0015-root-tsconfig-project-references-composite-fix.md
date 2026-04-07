@@ -1,0 +1,1 @@
+2026-04-04: Root project-reference integrity was restored by enforcing `composite: true` across all referenced projects, adding missing inter-project `references` for shared/core consumers, and aligning workspace typecheck execution so `pnpm run typecheck` validates the full graph without recursive root-script failure.

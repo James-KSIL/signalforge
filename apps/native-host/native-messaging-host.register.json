@@ -1,0 +1,9 @@
+﻿{
+    "name":  "com.signalforge.nativehost",
+    "description":  "SignalForge native host for Chrome native messaging (dev)",
+    "path":  "I:\\SignalForge\\apps\\native-host\\native_host.bat",
+    "type":  "stdio",
+    "allowed_origins":  [
+                            "chrome-extension://cpcegdcijbhndokogjpecopjhhjmjjie/"
+                        ]
+}
