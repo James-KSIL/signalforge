@@ -80,6 +80,16 @@ SignalForge intentionally exposes this flow without publishing proprietary imple
 
 30-day validation pilot (CLI + GitHub Actions integration in progress)
 
+## Validation Evidence
+
+SignalForge enforces deterministic validation at PR time.
+
+### Passing Contract
+![PASS](docs/evidence/signalforge-pr-pass.png)
+
+### Failing Contract
+![FAIL](docs/evidence/signalforge-pr-fail.png)
+
 ## Out of Scope
 
 - no AI inference
