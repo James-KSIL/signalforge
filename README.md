@@ -79,6 +79,7 @@ SignalForge intentionally exposes this flow without publishing proprietary imple
 ## Status
 
 30-day validation pilot (CLI + GitHub Actions integration in progress)
+Validation status: PASS test branch
 
 ## Out of Scope
 
